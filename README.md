@@ -13,7 +13,7 @@ sudo apt-get install certbot -y
 ```bash
 sudo certbot certonly --standalone -d example.com
 ```
-### Мы увидим что наш сертификат создан и находиться по жтому пути
+### Мы увидим что наш сертификат создан и находиться по этому пути
 ```bash
 Certificate is saved at: /etc/letsencrypt/live/example.com/fullchain.pem
 Key is saved at:         /etc/letsencrypt/live/example.com/privkey.pem
