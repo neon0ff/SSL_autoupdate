@@ -63,8 +63,8 @@ sudo systemctl restart httpd
 ## Примеры настройки конфига на Nginx
 ```bash
 server {
-    listen 8443 ssl http2;
-    listen [::]:8443 ssl http2;
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
     server_name example.com;
 
     ssl_certificate     /etc/ssl/nginx/cert.pem;
@@ -129,8 +129,8 @@ server {
 }
 
 server {
-    listen 8080;
-    listen [::]:8080;
+    listen 80;
+    listen [::]:80;
     server_name example.com;
     return 301 https://$server_name$request_uri;
 }
