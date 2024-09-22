@@ -1,137 +1,117 @@
-# SSL Сертификат
-### Установим 'certbot' на сервер, выполнив команды:
+### Эта инструкция о том, как поставить и обновлять SSL сертификаты Let's Encryprt даже при закрытом Security Group (AWS)
+
+##### Обновляем пакеты
 ```bash
-sudo add-apt-repository ppa:certbot/certbot
+sudo apt update
 ```
+
+##### Устанавливаем NGINX если требуется
 ```bash
-sudo apt-get update
+sudo apt install nginx
 ```
+
+##### Устанавливаем Snap
 ```bash
-sudo apt-get install certbot -y
+sudo apt install snap
 ```
-### Получим SSL сертификат для сайта. Выполним следующую команду, указав наше доменное имя вместо example.com:
+
+##### Устанавливаем Certbot
 ```bash
-sudo certbot certonly --standalone -d example.com
+sudo snap install --classic certbot
 ```
-### Мы увидим что наш сертификат создан и находиться по этому пути
+
+##### Устанавливаем символическую ссылку для Certbot
 ```bash
-Certificate is saved at: /etc/letsencrypt/live/example.com/fullchain.pem
-Key is saved at:         /etc/letsencrypt/live/example.com/privkey.pem
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
 ```
-### Далее повышенными правами мы их можем скопировать или дать доступ и перемещать как нам удобно
 
-## Примеры настройки конфига на Apache
+##### Разрешаем Certbot работать должным образом
 ```bash
-<VirtualHost *:80>
-
-        ServerName example.com
-
-        Redirect / https://example.com
-
-</VirtualHost>
-
-<VirtualHost *:443>
-
-        ServerAdmin webmaster@localhost
-
-        DocumentRoot /var/www/html
-
-    ServerName example.com
-
-        ErrorLog ${APACHE_LOG_DIR}/error.log
-        CustomLog ${APACHE_LOG_DIR}/access.log combined
-
-    # SSL Configuration
-    SSLEngine on
-    SSLCertificateFile /etc/letsencrypt/live/example.com/fullchain.pem
-    SSLCertificateKeyFile  /etc/letsencrypt/live/example.com/privkey.pem
-
-</VirtualHost>
-
-# vim: syntax=apache ts=4 sw=4 sts=4 sr noet
+sudo snap set certbot trust-plugin-with-root=ok
 ```
-### После изменения конфига прописать
+
+##### Устанавливаем Сertbot DNS agent для route 53 (AWS)
 ```bash
-sudo a2enmod ssl
+sudo snap install certbot-dns-route53
 ```
+
+##### Загружаем пакет AWS CLI
 ```bash
-sudo systemctl restart apache2
+sudo curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 ```
+
+##### Устанавливаем unzip
 ```bash
-sudo systemctl restart httpd
+sudo apt install unzip
 ```
-## Примеры настройки конфига на Nginx
+
+##### Разархивируем архив
 ```bash
-server {
-    listen 443 ssl http2;
-    listen [::]:443 ssl http2;
-    server_name example.com;
-
-    ssl_certificate     /etc/ssl/nginx/cert.pem;
-    ssl_certificate_key /etc/ssl/nginx/privkey.pem;
-
-    index index.php;
-    access_log /dev/fd/1 main;
-    error_log /dev/fd/2 notice;
-
-    set $webroot '/usr/share/zabbix';
-    root $webroot;
-
-    large_client_header_buffers 8 8k;
-    client_max_body_size 10M;
-
-    location = /favicon.ico { log_not_found off; }
-    location = /robots.txt { allow all; log_not_found off; access_log off; }
-
-    # Deny all attempts to access hidden files such as .htaccess, .htpasswd, .DS_Store (Mac).
-    location ~ /\. { deny all; access_log off; log_not_found off; }
-
-    # caching of files
-    location ~* \.ico$ { expires 1y; }
-    location ~* \.(js|css|png|jpg|jpeg|gif|xml|txt)$ { expires 14d; }
-
-    location ~ /(app\/|conf[^\.]|include\/|local\/|locale\/|vendor\/) {
-        deny all;
-        return 404;
-    }
-
-    location ~ ^/(status|ping)$ {
-        access_log off;
-        fastcgi_pass unix:/tmp/php-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME $webroot$fastcgi_script_name;
-        fastcgi_index index.php;
-        include fastcgi_params;
-    }
-
-    location / {
-        try_files $uri $uri/ /index.php?$args;
-    }
-
-    location ~ .php$ {
-        fastcgi_pass unix:/tmp/php-fpm.sock;
-        fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $webroot$fastcgi_script_name;
-        include fastcgi_params;
-        fastcgi_param QUERY_STRING $query_string;
-        fastcgi_param REQUEST_METHOD $request_method;
-        fastcgi_param CONTENT_TYPE $content_type;
-        fastcgi_param CONTENT_LENGTH $content_length;
-        fastcgi_intercept_errors on;
-        fastcgi_ignore_client_abort off;
-        fastcgi_connect_timeout 60;
-        fastcgi_send_timeout 180;
-        fastcgi_read_timeout 501;
-        fastcgi_buffer_size 128k;
-        fastcgi_buffers 4 256k;
-        fastcgi_busy_buffers_size 256k;
-        fastcgi_temp_file_write_size 256k;
-    }
-}
-
-server {
-    listen 80;
-    listen [::]:80;
-    server_name example.com;
-    return 301 https://$server_name$request_uri;
-}
+unzip awscliv2.zip
 ```
+
+##### Устанавливаем AWS CLI
+```bash
+sudo ./aws/install
+```
+
+##### Проверяем AWS CLI
+```bash
+aws --version
+```
+
+##### Настраиваем AWS CLI
+```bash
+sudo aws configure
+```
+
+##### Вводим данные
+```
+ubuntu@test3-SSL$ aws configure
+AWS Access Key ID [None]: A2IA2U23AW62KAR2GYAF
+AWS Secret Access Key [None]: P9LXc+y+PLoLyQaxwh7YwdHrjxbxSwpLUxb/gT1c
+Default region name [None]: eu-north-1
+Default output format [None]:
+```
+> [!IMPORTANT]
+> Ваши данные будут другими, это лишь несуществующий в реальности пример AWS ключей
+
+##### Выдаем сертификат
+```bash
+sudo certbot certonly \
+  --dns-route53 \
+  -d example.com
+```
+
+
+> [!WARNING]
+> Шаг ниже требуется лишь если у вас не настроен NGINX и вам лень это делать вручную
+##### Устанавливаем или перевыпускаем сертификаты
+```bash
+sudo certbot --nginx -d example.com
+```
+
+---
+
+### Команды для автоматизации обновления сертификатов
+
+###### Команда принудительного обновления сертификата
+```bash
+sudo certbot renew --force-renewal --deploy-hook "systemctl reload nginx"
+```
+
+##### Команда открытия Crontan
+```bash
+sudo crontab -e
+```
+
+##### Если добавить эту команду в Cron, то сертификат будет принудительно обновляться первого числа каждого второго месяца в 2 часа ночи
+```bash
+0 2 1 */2 * certbot renew --force-renewal --quiet --deploy-hook "systemctl reload nginx"
+```
+
+##### Команда изменение почты для уведомлений выданного сертификата 
+```bash
+sudo certbot update_account --email new_email@example.com
+```
+
