@@ -67,7 +67,7 @@ sudo aws configure
 
 ##### Вводим данные
 ```
-ubuntu@test3-SSL$ aws configure
+ubuntu@test-SSL$ aws configure
 AWS Access Key ID [None]: A2IA2U23AW62KAR2GYAF
 AWS Secret Access Key [None]: P9LXc+y+PLoLyQaxwh7YwdHrjxbxSwpLUxb/gT1c
 Default region name [None]: eu-north-1
