@@ -52,7 +52,7 @@ unzip awscliv2.zip
 
 ##### Устанавливаем AWS CLI
 ```bash
-sudo  ./aws/install
+sudo ./aws/install
 ```
 
 ##### Проверяем AWS CLI
@@ -62,7 +62,7 @@ aws --version
 
 ##### Настраиваем AWS CLI
 ```bash
-sudo  aws configure
+sudo aws configure
 ```
 
 ##### Вводим данные
