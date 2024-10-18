@@ -10,7 +10,9 @@ AWS_REGION=""
 # Функция для запроса ввода
 read_input() {
     read -p "Введите домен для сертификата (example.com): " DOMAIN
-    read -p "Введите email для уведомлений Let's Encrypt: " EMAIL
+    if [ -z "$EMAIL" ]; then
+        read -p "Введите email для уведомлений Let's Encrypt (или оставьте пустым): " EMAIL
+    fi
     read -p "Введите AWS Access Key ID: " AWS_ACCESS_KEY
     read -p "Введите AWS Secret Access Key: " AWS_SECRET_KEY
     read -p "Введите регион AWS (например, eu-north-1): " AWS_REGION
@@ -20,10 +22,14 @@ read_input() {
 echo "Обновляем пакеты..."
 sudo apt update -y
 
-# Устанавливаем NGINX если он не установлен
-if ! dpkg -l | grep -q nginx; then
-    echo "Устанавливаем NGINX..."
-    sudo apt install -y nginx
+# Спрашиваем, нужен ли NGINX
+read -p "Хотите ли вы установить и настроить NGINX? (y/n): " NGINX_SETUP
+if [[ "$NGINX_SETUP" == "y" || "$NGINX_SETUP" == "Y" ]]; then
+    # Устанавливаем NGINX если он не установлен
+    if ! dpkg -l | grep -q nginx; then
+        echo "Устанавливаем NGINX..."
+        sudo apt install -y nginx
+    fi
 fi
 
 # Устанавливаем Snap, если он не установлен
@@ -66,31 +72,45 @@ aws configure set aws_secret_access_key "$AWS_SECRET_KEY"
 aws configure set region "$AWS_REGION"
 
 # Запрашиваем ввод домена, email и региона, если они не переданы через переменные
-if [ -z "$DOMAIN" ] || [ -z "$EMAIL" ] || [ -z "$AWS_REGION" ]; then
+if [ -z "$DOMAIN" ] || [ -z "$AWS_REGION" ]; then
     read_input
 fi
 
-# Получаем сертификат через DNS Route 53
-echo "Запрашиваем SSL-сертификат для домена $DOMAIN..."
-sudo certbot certonly --dns-route53 -d "$DOMAIN" --email "$EMAIL" --agree-tos --no-eff-email
+# Получаем SSL-сертификат через DNS Route 53
+if [ -z "$EMAIL" ]; then
+    # Если email не указан, вызываем certbot без email-флага
+    echo "Запрашиваем SSL-сертификат для домена $DOMAIN без email..."
+    sudo certbot certonly --dns-route53 -d "$DOMAIN" --agree-tos --no-eff-email
+else
+    # Если email указан, добавляем email-флаг
+    echo "Запрашиваем SSL-сертификат для домена $DOMAIN с email $EMAIL..."
+    sudo certbot certonly --dns-route53 -d "$DOMAIN" --email "$EMAIL" --agree-tos --no-eff-email
+fi
 
-# Спрашиваем, нужно ли настраивать сертификаты через NGINX
-read -p "Хотите ли вы настроить сертификаты через NGINX? (y/n): " NGINX_SETUP
+# Настройка сертификатов через NGINX (если выбран)
 if [[ "$NGINX_SETUP" == "y" || "$NGINX_SETUP" == "Y" ]]; then
     echo "Настройка сертификатов через NGINX..."
     sudo certbot --nginx -d "$DOMAIN"
+    
+    # Спрашиваем, нужно ли добавить принудительное обновление в cron с перезапуском NGINX
+    read -p "Хотите ли вы добавить обновление сертификатов в cron с перезапуском NGINX? (y/n): " CRON_SETUP
+    if [[ "$CRON_SETUP" == "y" || "$CRON_SETUP" == "Y" ]]; then
+        echo "Настраиваем cron для автоматического обновления сертификатов с перезапуском NGINX..."
+        (crontab -l 2>/dev/null; echo "0 2 1 */2 * certbot renew --quiet --deploy-hook 'systemctl reload nginx'") | crontab -
+    fi
+else
+    # Добавление cron для обновления сертификатов без NGINX
+    read -p "Хотите ли вы добавить обновление сертификатов в cron без перезапуска NGINX? (y/n): " CRON_SETUP
+    if [[ "$CRON_SETUP" == "y" || "$CRON_SETUP" == "Y" ]]; then
+        echo "Настраиваем cron для автоматического обновления сертификатов без перезапуска NGINX..."
+        (crontab -l 2>/dev/null; echo "0 2 1 */2 * certbot renew --force-renewal --quiet") | crontab -
+    fi
 fi
 
-# Спрашиваем, нужно ли добавить принудительное обновление в cron
-read -p "Хотите ли вы добавить обновление сертификатов в cron? (y/n): " CRON_SETUP
-if [[ "$CRON_SETUP" == "y" || "$CRON_SETUP" == "Y" ]]; then
-    # Добавление в cron (без принудительного обновления)
-    echo "Настраиваем cron для автоматического обновления сертификатов..."
-    (crontab -l 2>/dev/null; echo "0 2 1 */2 * certbot renew --quiet --deploy-hook 'systemctl reload nginx'") | crontab -
+# Изменение email для уведомлений, только если указан email
+if [ -n "$EMAIL" ]; then
+    echo "Изменение email для уведомлений на $EMAIL..."
+    sudo certbot update_account --email "$EMAIL"
 fi
-
-# Изменение email для уведомлений
-echo "Изменение email для уведомлений на $EMAIL..."
-sudo certbot update_account --email "$EMAIL"
 
 echo "Скрипт завершен. Сертификаты настроены, автоматическое обновление настроено (если выбрано)."
