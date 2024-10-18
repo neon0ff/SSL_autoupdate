@@ -9,14 +9,25 @@ AWS_REGION=""
 
 # Функция для запроса ввода
 read_input() {
-    read -p "Введите домен для сертификата (example.com): " DOMAIN
+    if [ -z "$DOMAIN" ]; then
+        read -p "Введите домен для сертификата (example.com): " DOMAIN
+    fi
     if [ -z "$EMAIL" ]; then
         read -p "Введите email для уведомлений Let's Encrypt (или оставьте пустым): " EMAIL
     fi
-    read -p "Введите AWS Access Key ID: " AWS_ACCESS_KEY
-    read -p "Введите AWS Secret Access Key: " AWS_SECRET_KEY
-    read -p "Введите регион AWS (например, eu-north-1): " AWS_REGION
+    if [ -z "$AWS_ACCESS_KEY" ]; then
+        read -p "Введите AWS Access Key ID: " AWS_ACCESS_KEY
+    fi
+    if [ -z "$AWS_SECRET_KEY" ]; then
+        read -p "Введите AWS Secret Access Key: " AWS_SECRET_KEY
+    fi
+    if [ -z "$AWS_REGION" ]; then
+        read -p "Введите регион AWS (например, eu-north-1): " AWS_REGION
+    fi
 }
+
+# Запрашиваем данные перед основными операциями
+read_input
 
 # Обновляем пакеты
 echo "Обновляем пакеты..."
