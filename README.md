@@ -1,8 +1,8 @@
 ###   Обновление сертификатов с помощью certbot-dns-route53 
 ##### Для начала надо определить способ ранее полученных сертификатов.
 
-- C[lassic certbot]([url](https://github.com/neon0ff/SSL/blob/main/Classic%20certbot.md))
-- [Certbot docker-compose]([url](https://github.com/neon0ff/SSL/blob/main/Certbot%20docker-compose.md))
+- [Сlassic certbot](https://github.com/neon0ff/SSL/blob/main/Classic%20certbot.md)
+- [Certbot docker-compose](https://github.com/neon0ff/SSL/blob/main/Certbot%20docker-compose.md)
 
 ### Команды для автоматизации обновления сертификатов
 
