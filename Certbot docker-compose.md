@@ -13,7 +13,7 @@ cat Project/docker-compose.cert.yml
 ```bash
 sudo snap install --classic certbot
 ```
-##### И вернемся к пункту [[Classic certbot]] 
+##### И вернемся к пункту [Classic certbot](https://github.com/neon0ff/SSL/blob/main/Classic%20certbot.md)
 
 ---
 ##### Если же путь не дефолтный для certbot. Например:
@@ -23,7 +23,7 @@ sudo snap install --classic certbot
       - ./certbot-etc:/etc/letsencrypt
 ```
 
-##### Мы можем либо изменить путь до сертификатов в docker-compose для NGINX и снова вернуться к пункту  [[Classic certbot]] или же оставить как есть, но выдать сертификат под кастомный путь, предварительно удалив или переименовав папку с сертификатами.
+##### Мы можем либо изменить путь до сертификатов в docker-compose для NGINX и снова вернуться к пункту [Classic certbot](https://github.com/neon0ff/SSL/blob/main/Classic%20certbot.md) или же оставить как есть, но выдать сертификат под кастомный путь, предварительно удалив или переименовав папку с сертификатами.
 
 ```bash
 sudo certbot certonly --standalone --config-dir /path-to-folder/certbot-etc -d example.com
