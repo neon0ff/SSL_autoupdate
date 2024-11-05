@@ -54,12 +54,12 @@ aws --version
 
 ##### Настраиваем AWS CLI
 > [!TIP]
-> Если мы будем обновлять существующий сертификат, а не добавлять новый, нам не обязательно вставлять данные в `aws configure` 
+> Если мы будем обновлять существующий сертификат, а не добавлять новый, нам не обязательно вставлять данные в `sudo aws configure` 
 
 ##### Вводим данные
 
 ```
-ubuntu@test-SSL$ aws configure
+ubuntu@test-SSL$sudo aws configure
 AWS Access Key ID [None]: AA2AA2AA2AA2AA2AA2A2
 AWS Secret Access Key [None]: P9LXc+y+PLoLyQaxwh7YwdHrjxbxSwpLUxb/fT7c
 Default region name [None]: eu-north-1
