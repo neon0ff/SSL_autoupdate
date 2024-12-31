@@ -33,6 +33,10 @@ sudo EDITOR=nano crontab -e
 0 2 1 */2 * certbot renew --force-renewal --quiet --deploy-hook "systemctl reload nginx"
 ```
 
+##### Такой же вариант с остановкаой контейнера nginx и его презапуск с использованием кастомного пути для сертификатов
+```bash
+0 0 1 */2 * docker stop site-nginx-1 && certbot renew --force-renewal --config-dir /home/ubuntu/test/Site/certbot-etc --deploy-hook "docker restart site-nginx-1"
+```
 ##### Команда изменение почты для уведомлений выданного сертификата 
 
 ```bash
