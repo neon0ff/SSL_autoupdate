@@ -10,7 +10,7 @@ sudo chmod +x SSL_autoupdate.sh
 ```
 ##### Выполняем скрипт от sudo
 ```bash
-sudo ./aster.sh
+sudo ./SSL_autoupdate.sh
 ```
 ##### В моменте может запросить директорию certbot, если она по умолчанию пишем следующиее
 ```bash
