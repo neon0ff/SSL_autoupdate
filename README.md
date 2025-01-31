@@ -18,5 +18,5 @@ sudo ./SSL_autoupdate.sh
 ```
 ##### Если же сертификаты выдавали с помощью Docker, то указываем путь до certbot-etc, например:
 ```bash
-/home/ubuntu/project/site/certbot-etc
+/home/ubuntu/project/Site/certbot-etc
 ```
