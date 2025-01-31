@@ -88,7 +88,7 @@ update_certificates() {
         -v "$CERT_PATH:/etc/letsencrypt" \
         certbot/dns-route53 certonly \
         --force-renewal --dns-route53 --non-interactive --agree-tos \
-        --email test@test.com -d "$DOMAIN"
+        -d "$DOMAIN"
 
     echo -e "${GREEN}Обновление завершено.${NC}"
 
