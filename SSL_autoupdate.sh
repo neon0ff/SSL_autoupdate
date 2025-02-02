@@ -125,8 +125,44 @@ reload_nginx() {
     fi
 }
 
+# Функция для добавления скрипта в cron
+add_to_cron() {
+    # Получаем абсолютный путь к текущему скрипту
+    SCRIPT_PATH=$(realpath "$0")
+
+    # Проверка, существует ли уже задание в cron
+    CRON_JOB="0 0 1,16 * * $SCRIPT_PATH"
+
+    if ! crontab -l | grep -F "$CRON_JOB" > /dev/null; then
+        echo -e "${GREEN}Добавляем задание в cron...${NC}"
+        (crontab -l 2>/dev/null; echo "$CRON_JOB") | crontab -
+        echo -e "${GREEN}Задание успешно добавлено в cron. Скрипт будет выполняться 1-го и 16-го числа каждого месяца.${NC}"
+    else
+        echo -e "${YELLOW}Задание уже существует в cron.${NC}"
+    fi
+}
+
+# Запрос на добавление в cron
+add_to_cron_prompt() {
+    # Проверка наличия задания в cron перед тем, как запрашивать добавление
+    SCRIPT_PATH=$(realpath "$0")
+    CRON_JOB="0 0 1,16 * * $SCRIPT_PATH"
+
+    if crontab -l | grep -F "$CRON_JOB" > /dev/null; then
+        echo -e "${YELLOW}Задание уже существует в cron, пропускаем добавление.${NC}"
+    else
+        read -p "Хотите добавить этот скрипт в cron для выполнения 1-го и 16-го числа каждого месяца? (y/n): " add_to_cron
+        if [[ "$add_to_cron" == "y" || "$add_to_cron" == "Y" ]]; then
+            add_to_cron
+        else
+            echo -e "${GREEN}Скрипт не будет добавлен в cron.${NC}"
+        fi
+    fi
+}
+
 # Проверка на запуск с правами sudo
 check_sudo
 
 # Запуск
 read_cert_path
+add_to_cron_prompt
